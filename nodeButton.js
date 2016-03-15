@@ -1,7 +1,12 @@
 var request = require('request'),
 	hue = require("node-hue-api"),
 	dash_button = require('node-dash-button'),
+        Wemo = require('wemo-client'),
 	moment = require('moment');
+
+var wemo = new Wemo();
+var wemoSwitch;
+
 
 var HueApi = hue.HueApi,
     hueIp = '192.168.0.33',
@@ -12,29 +17,37 @@ var HueApi = hue.HueApi,
 var dashes = {
 	cottonelle: "a0:02:dc:b6:15:18",
 	bounty: "74:c2:46:df:12:67",
-	larabar: "74:c2:46:13:93:e3" 	
+	larabar: "74:c2:46:13:93:e3"
 };
 
 var lights = {
 	kendra: 1,
 	luke: 2,
 	living_room: 3
+};
+
+var wemoSwitches = {
+  ledge: "Ledge"
 }
 
-var macs = dash_button([dashes.cottonelle,dashes.bounty, dashes.larabar]); //address from step above
+var macs = dash_button([
+  dashes.cottonelle,
+  dashes.bounty, 
+  dashes.larabar
+]); //address from step above
 
 console.log("------------- Started nodeButton ----------------");
 
 macs.on("detected", function (dash_id){
     if (dash_id === dashes.cottonelle){
         console.log("{{ Cottonelle Pressed }}");
-        toggle_light(lights.living_room);
+        toggle_wemoswitch(wemoSwitches.ledge);
     } else if (dash_id === dashes.bounty){
         console.log("{{ Bounty Pressed }}");
         toggle_light(lights.luke);
     } else if (dash_id === dashes.larabar) {
     	console.log("{{ Larabar Pressed }}");
-		toggle_light(lights.kendra);
+	toggle_light(lights.kendra);
     } else {
 	console.log(dash_id);
     }
@@ -88,7 +101,7 @@ function getOnLightState(roughTime) {
 	return state;
 }
 
-var toggle_light = function(lightId) {
+function toggle_light(lightId) {
 	console.log('Triggering Event for light: ' + lightId);
 
 	state = lightState.create();
@@ -114,3 +127,22 @@ var toggle_light = function(lightId) {
 	});
 };
 
+function toggle_wemoswitch(switchName) {
+    console.log('Triggering Event for switch: ' + switchName);
+    wemo.discover(function(deviceInfo) {
+      if (deviceInfo && deviceInfo.friendlyName === switchName) {
+        console.log('Found switch: ' + switchName);
+        // Get the client for the found device
+        wemoSwitch = wemo.client(deviceInfo);
+
+        wemoSwitch.getBinaryState(function(err, state) {
+          if (err != null) console.err(err);
+          else {
+            var newState = state ^= 1;
+            wemoSwitch.setBinaryState(newState);
+          }
+        });
+      }
+    });
+
+}
