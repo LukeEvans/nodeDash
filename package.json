@@ -9,9 +9,9 @@
     "wemo"
   ],
   "dependencies": {
-    "request": "2.67.0",
-    "node-hue-api": "2.0.0",
-    "node-dash-button": "0.3.0",
-    "moment": "2.12.0"
+    "node-hue-api":"*",
+    "node-dash-button":"*",
+    "moment":"*",
+    "wemo-client":"*"
   }
 }
