@@ -26,8 +26,8 @@ var lights = {
 	living_room: 3
 };
 
-var wemoSwitches = {
-  ledge: "Ledge"
+var ledgeSwitch = {
+	"name": "Ledge"
 }
 
 var macs = dash_button([
@@ -37,11 +37,20 @@ var macs = dash_button([
 ]); //address from step above
 
 console.log("------------- Started nodeButton ----------------");
+console.log("++ Detecting Wemo Switches ++");
+
+wemo.discover(function(deviceInfo) {
+      if (deviceInfo && deviceInfo.friendlyName === ledgeSwitch.name) {
+      		console.log('Found switch: ' + ledgeSwitch.name);
+        	ledgeSwitch.wemoClient = wemo.client(deviceInfo);
+      }
+
+});
 
 macs.on("detected", function (dash_id){
     if (dash_id === dashes.cottonelle){
         console.log("{{ Cottonelle Pressed }}");
-        toggle_wemoswitch(wemoSwitches.ledge);
+        toggle_wemoswitch(ledgeSwitch);
     } else if (dash_id === dashes.bounty){
         console.log("{{ Bounty Pressed }}");
         toggle_light(lights.luke);
@@ -127,22 +136,15 @@ function toggle_light(lightId) {
 	});
 };
 
-function toggle_wemoswitch(switchName) {
-    console.log('Triggering Event for switch: ' + switchName);
-    wemo.discover(function(deviceInfo) {
-      if (deviceInfo && deviceInfo.friendlyName === switchName) {
-        console.log('Found switch: ' + switchName);
-        // Get the client for the found device
-        wemoSwitch = wemo.client(deviceInfo);
+function toggle_wemoswitch(wemoSwitch) {
+	console.log('Triggering Event for switch: ' + wemoSwitch.name);
+	
+	wemoSwitch.wemoClient.getBinaryState(function(err, state) {
+		if (err != null) console.err(err);
+		else {
+			var newState = state ^= 1;
+			wemoSwitch.wemoClient.setBinaryState(newState);
 
-        wemoSwitch.getBinaryState(function(err, state) {
-          if (err != null) console.err(err);
-          else {
-            var newState = state ^= 1;
-            wemoSwitch.setBinaryState(newState);
-          }
-        });
-      }
-    });
-
-}
+		};
+	});
+};
