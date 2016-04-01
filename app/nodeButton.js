@@ -113,9 +113,9 @@ function getRoughTime (m) {
 
 function getOnLightState(roughTime) {
 	state = lightState.create().on(true);
-	if (roughTime === "morning") { state.brightness(80); } 
+	if (roughTime === "morning") { state.brightness(100); } 
 	else if (roughTime === "afternoon") { state.brightness(100); } 
-	else if (roughTime === "evening") { state.brightness(80); } 
+	else if (roughTime === "evening") { state.brightness(100); } 
 	else { state.brightness(10); }
 
 	return state;
