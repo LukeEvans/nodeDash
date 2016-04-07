@@ -17,13 +17,16 @@ var HueApi = hue.HueApi,
 var dashes = {
 	cottonelle: "a0:02:dc:b6:15:18",
 	bounty: "74:c2:46:df:12:67",
-	larabar: "74:c2:46:13:93:e3"
+	larabar: "74:c2:46:13:93:e3",
+	gillette: "74:c2:46:d8:b1:0d",
+	ziploc:	"a0:02:dc:08:12:53"
 };
 
 var lights = {
 	kendra: 1,
 	luke: 2,
-	living_room: 3
+	living_room: 3,
+	bedroom: 4
 };
 
 var ledgeSwitch = {
@@ -33,7 +36,9 @@ var ledgeSwitch = {
 var macs = dash_button([
   dashes.cottonelle,
   dashes.bounty, 
-  dashes.larabar
+  dashes.larabar,
+  dashes.gillette,
+  dashes.ziploc
 ]); //address from step above
 
 console.log("------------- Started nodeButton ----------------");
@@ -57,6 +62,12 @@ macs.on("detected", function (dash_id){
     } else if (dash_id === dashes.larabar) {
     	console.log("{{ Larabar Pressed }}");
 	toggle_light(lights.kendra);
+    } else if (dash_id === dashes.gillette) {
+	console.log("{{ Gillette Pressed }}");
+	toggle_light(lights.bedroom);
+    } else if (dash_id === dashes.ziploc) {
+	console.log("{{ Ziploc Pressed }}");
+	toggle_light(lights.living_room);
     } else {
 	console.log(dash_id);
     }
@@ -125,7 +136,7 @@ function toggle_light(lightId) {
     		state = getOnLightState(roughTime);
     	} else {
     		console.log('Turning off light: ' + lightId);
-			state = state.off();
+		state = state.off();
     		
     	}
 
@@ -134,6 +145,13 @@ function toggle_light(lightId) {
     		.fail(displayError)
     		.done();
 	});
+};
+
+function set_light_state(lightId, brightness) {
+	api.setLightState(lightId, brightness)
+		.then(displayResult)
+		.fail(displayError)
+		.done();
 };
 
 function toggle_wemoswitch(wemoSwitch) {
