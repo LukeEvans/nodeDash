@@ -87,7 +87,7 @@ function getRoughTime (m) {
 
 	if(currentHour >= split_afternoon && currentHour <= split_evening) {
 		g = "afternoon";
-	} else if(currentHour >= split_evening ) {
+	} else if(currentHour >= split_evening && currentHour <= split_bed) {
 		g = "evening";
 	} else if (currentHour >= split_bed || currentHour <= split_twilight) {
 		g = "bed";
