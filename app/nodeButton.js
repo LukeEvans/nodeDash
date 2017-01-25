@@ -9,7 +9,7 @@ var wemoSwitch;
 
 
 var HueApi = hue.HueApi,
-    hueIp = '192.168.0.33',
+    hueIp = '192.168.0.9',
     hueUsername = '1f58464c110b3a8f2166a22437630227',
     lightState = hue.lightState,
     api = new HueApi(hueIp, hueUsername)
@@ -127,8 +127,12 @@ function toggle_light(lightId) {
 	state = lightState.create();
 
 	api.lightStatus(lightId, function(err, result) {
-    	if (err) throw err;
- 		var roughTime = getRoughTime(moment());
+    	if (err) {
+		console.log("Error:",  err);
+		throw err;
+	}
+
+	var roughTime = getRoughTime(moment());
 
     	if (result && result.state && !result.state.on) {
     		console.log(result.state);
