@@ -67,6 +67,9 @@ macs.on("detected", function (dash_id) {
         dimLightOverDuration(lights.corner, 10 * 1000);
         dimLightOverDuration(lights.window, 10 * 1000);
 
+	// Dim Luke's light
+	setLightBrightness(lights.luke, 10);
+
         // Turn ledge off
         turnOffWemoswitch(ledgeSwitch);
     } else if (dash_id === dashes.ziploc) {
@@ -133,6 +136,18 @@ function getOnLightState(roughTime) {
     }
 
     return state;
+}
+
+function setLightBrightness(lightId, brightnes) {
+    console.log('Triggering Dimming Evet for light: ' + lightId);
+
+    var state = lightState.create().on(true);
+    state.brightness(brightnes);
+
+    api.setLightState(lightId, state)
+    	.then(displayResult)
+    	.fail(displayError)
+    	.done();
 }
 
 function toggleLight(lightId) {
