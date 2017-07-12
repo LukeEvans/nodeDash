@@ -7,7 +7,7 @@ var request = require('request'),
 var wemo = new Wemo();
 
 var HueApi = hue.HueApi,
-    hueIp = '192.168.0.9',
+    hueIp = '10.0.0.77',
     hueUsername = '1f58464c110b3a8f2166a22437630227',
     lightState = hue.lightState,
     api = new HueApi(hueIp, hueUsername)
@@ -24,11 +24,12 @@ var lights = {
     kendra: 1,
     luke: 2,
     window: 3,
-    corner: 5
+    corner: 5,
+    pensive: 6
 };
 
-var ledgeSwitch = {
-    "name": "Ledge"
+var wemoSwitch = {
+    "name": "Salt lamp"
 };
 
 var macs = dash_button([
@@ -43,9 +44,9 @@ console.log("------------- Started nodeButton ----------------");
 console.log("++ Detecting Wemo Switches ++");
 
 wemo.discover(function (deviceInfo) {
-    if (deviceInfo && deviceInfo.friendlyName === ledgeSwitch.name) {
-        console.log('Found switch: ' + ledgeSwitch.name);
-        ledgeSwitch.wemoClient = wemo.client(deviceInfo);
+    if (deviceInfo && deviceInfo.friendlyName === wemoSwitch.name) {
+        console.log('Found switch: ' + wemoSwitch.name);
+        wemoSwitch.wemoClient = wemo.client(deviceInfo);
     }
 
 });
@@ -53,13 +54,24 @@ wemo.discover(function (deviceInfo) {
 macs.on("detected", function (dash_id) {
     if (dash_id === dashes.cottonelle) {
         console.log("{{ Cottonelle Pressed }}");
-        toggleWemoswitch(ledgeSwitch);
+        // Turn lights off slowly
+        dimLightOverDuration(lights.kendra,  5  * 1000);
+        dimLightOverDuration(lights.corner,  300 * 1000);
+        dimLightOverDuration(lights.window,  300 * 1000);
+        dimLightOverDuration(lights.luke,    300 * 1000);
+        dimLightOverDuration(lights.pensive, 300 * 1000);
+
+        // Turn wemo off
+        turnOffWemoswitch(wemoSwitch);
+
     } else if (dash_id === dashes.bounty) {
         console.log("{{ Bounty Pressed }}");
         toggleLight(lights.luke);
+
     } else if (dash_id === dashes.larabar) {
         console.log("{{ Larabar Pressed }}");
         toggleLight(lights.kendra);
+
     } else if (dash_id === dashes.gillette) {
         console.log("{{ Gillette Pressed }}");
         // Turn lights off slowly
@@ -68,10 +80,11 @@ macs.on("detected", function (dash_id) {
         dimLightOverDuration(lights.window, 10 * 1000);
 
 	// Dim Luke's light
-	setLightBrightness(lights.luke, 10);
+	setLightBrightnessAndColor(lights.luke, 10);
+	setLightBrightnessAndColor(lights.pensive, 10, 500);
 
-        // Turn ledge off
-        turnOffWemoswitch(ledgeSwitch);
+        // Turn wemo off
+        turnOffWemoswitch(wemoSwitch);
     } else if (dash_id === dashes.ziploc) {
         console.log("{{ Ziploc Pressed }}");
         toggleLight(lights.window);
@@ -138,11 +151,15 @@ function getOnLightState(roughTime) {
     return state;
 }
 
-function setLightBrightness(lightId, brightnes) {
+function setLightBrightnessAndColor(lightId, brightnes, colorTemp) {
     console.log('Triggering Dimming Evet for light: ' + lightId);
 
     var state = lightState.create().on(true);
     state.brightness(brightnes);
+
+    if (colorTemp) {
+        state.colorTemp(colorTemp);
+    }
 
     api.setLightState(lightId, state)
     	.then(displayResult)
